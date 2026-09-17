@@ -1,0 +1,46 @@
+export const PHYSICS_CONFIG = {
+  MASS: {
+    WIN_THRESHOLD: 50,
+    BLOCK_PERSONAL: 20,
+    BLOCK_EDU: 15,
+    BLOCK_SKILLS: 15,
+    ADS_WEIGHT: 50,
+    TRAPDOOR_DOOR: 100,
+    GOLD_PIECE: 2
+  },
+  FRICTION: {
+    BLOCK: 0.8,
+    BLOCK_AIR: 0.02,
+    TRAPDOOR_AIR: 0.05,
+    GOLD: 0.1,
+    GOLD_AIR: 0.01
+  },
+  COLLISION: {
+    CATEGORY_WALL: 0x0001,
+    CATEGORY_BLOCK: 0x0002,
+    CATEGORY_TRAPDOOR: 0x0004,
+    CATEGORY_GOLD: 0x0008
+  },
+  RESTITUTION: {
+    BLOCK: 0.2,
+    GOLD: 0.5
+  },
+  CONSTRAINTS: {
+    SNAP_RADIUS: 25,
+    HOOK_STIFFNESS: 0.95,
+    HOOK_DAMPING: 0.1,
+    MOUSE_STIFFNESS: 0.5,
+    MOUSE_DAMPING: 0.5,
+    HINGE_STIFFNESS: 1.0,
+    HINGE_LENGTH: 0
+  }
+};
+
+export const GAME_CONFIG = {
+  TRAPDOOR: {
+    DOOR_WIDTH_RATIO: 0.5, // 50% of screen width per door
+    DOOR_HEIGHT: 20,
+    Y_POS: 100,
+    GOLD_COUNT: 50 // Increased amount of gold
+  }
+};

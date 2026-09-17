@@ -1,0 +1,347 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-secondary: #8b5cf6;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  /* bg-gray-100 */
+}
+
+/* Base styles for the game */
+#game-container {
+  position: relative;
+  width: 100vw;
+  max-width: 480px;
+  height: 100vh;
+  margin: 0 auto;
+  background-color: #e5e7eb;
+  /* bg-gray-200 */
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  touch-action: none;
+  /* Prevent scrolling while dragging */
+}
+
+/* UI Elements */
+.cv-block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #8D5524;
+  /* wood base color */
+  background-image: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 14px,
+      rgba(0, 0, 0, 0.15) 14px,
+      rgba(0, 0, 0, 0.15) 18px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  cursor: grab;
+  transform-origin: center center;
+
+  /* Pixelated borders */
+  border: 4px solid #3e2723;
+  box-shadow:
+    inset -4px -4px 0px 0px rgba(0, 0, 0, 0.3),
+    inset 4px 4px 0px 0px rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  /* no rounded corners for pure pixel art */
+  transition: border-color 0.2s, filter 0.2s;
+  image-rendering: pixelated;
+}
+
+/* Add corner rivets for chests */
+.cv-block::before,
+.cv-block::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cv-block::before {
+  /* top rivets */
+  box-shadow:
+    inset 8px 8px 0px -4px #4a4a4a,
+    inset -8px 8px 0px -4px #4a4a4a;
+}
+
+.cv-block::after {
+  /* bottom rivets */
+  box-shadow:
+    inset 8px -8px 0px -4px #4a4a4a,
+    inset -8px -8px 0px -4px #4a4a4a;
+}
+
+.state-grounded {
+  border-color: #3e2723;
+}
+
+.state-dragging {
+  border-color: #facc15;
+  /* highlight border yellow when dragged */
+  filter: brightness(1.2);
+}
+
+.state-hooked {
+  border-color: #22c55e;
+  filter: brightness(1.1);
+}
+
+.cv-block:active {
+  cursor: grabbing;
+}
+
+/* UI Hooks representation */
+.hook-top {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border: 4px solid #71717a;
+  /* gray metal */
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 4px 0px inset rgba(255, 255, 255, 0.3);
+}
+
+.hook-bottom {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 20px;
+  border: 4px solid #71717a;
+  border-top: none;
+  border-left: none;
+  border-radius: 0 0 16px 16px;
+  background: transparent;
+}
+
+.ads-weight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 120px;
+  background-color: #374151;
+  /* dark gray metal */
+  border: 4px solid #111827;
+  box-shadow:
+    inset -4px -4px 0px 0px rgba(0, 0, 0, 0.3),
+    inset 4px 4px 0px 0px rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 0;
+}
+
+.gold-coin {
+  background-image: url('/GoldCoin.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  transform-origin: center center;
+}
+
+.trapdoor-wood {
+  background-color: #78350f;
+  /* amber-900 */
+  border: 4px solid #451a03;
+  box-shadow:
+    inset -2px -2px 0px 0px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 0px 0px rgba(255, 255, 255, 0.1);
+  border-radius: 0 !important;
+  background-image: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.2) 10px,
+      rgba(0, 0, 0, 0.2) 12px);
+}
+
+/* Text styles */
+.pixel-title {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0px #000;
+  color: #fcd34d;
+  margin-bottom: 0px;
+  line-height: 1.0;
+  z-index: 10;
+}
+
+.pixel-desc {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  text-shadow: 1px 1px 0px #000;
+  color: #fff;
+  line-height: 1.0;
+  z-index: 10;
+}
+
+.block-weight-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  background-color: #1e1b4b;
+  color: #fde047;
+  border: 2px solid #f59e0b;
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 1px 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 12;
+}
+
+
+
+/* Tutorial hand hint animation */
+@keyframes hand-drag {
+
+  0%,
+  28% {
+    transform: translateY(0px);
+    opacity: 0;
+  }
+
+  35% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+
+  72% {
+    transform: translateY(-270px);
+    opacity: 1;
+  }
+
+  88% {
+    transform: translateY(-270px);
+    opacity: 1;
+  }
+
+  96%,
+  100% {
+    transform: translateY(-270px);
+    opacity: 0;
+  }
+}
+
+#tutorial-hand {
+  animation: hand-drag 4.2s ease-in-out infinite;
+}
+
+@keyframes tutorial-fade-out {
+
+  0%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+}
+
+#tutorial-hint {
+  animation: tutorial-fade-out 7s ease forwards;
+}
+
+#tutorial-hand svg {
+  width: 80px !important;
+  height: 80px !important;
+  min-width: 80px !important;
+  min-height: 80px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ad selling points stagger in */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Chibi Styles using Sprite Sheet Animations */
+@keyframes soldierIdle {
+  from {
+    background-position: 0px 0px;
+  }
+
+  to {
+    background-position: -1200px 0px;
+  }
+}
+
+@keyframes soldierCelebrate {
+  from {
+    background-position: 0px 0px;
+  }
+
+  to {
+    background-position: -1200px 0px;
+  }
+}
+
+@keyframes celebrateBounce {
+  0% {
+    transform: scaleX(-1) translateY(0);
+  }
+
+  100% {
+    transform: scaleX(-1) translateY(-15px);
+  }
+}
+
+.chibi {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  width: 200px;
+  height: 200px;
+  z-index: 5;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  background-size: 1200px 200px;
+  transform: scaleX(-1);
+}
+
+.chibi.reaching {
+  background-image: url('/Soldier_Idle.png');
+  animation: soldierIdle 0.9s steps(6) infinite;
+}
+
+.chibi.celebration {
+  background-image: url('/Soldier_Celebrate.png');
+  animation: soldierCelebrate 0.7s steps(6) infinite, celebrateBounce 0.4s ease-in-out infinite alternate;
+}
