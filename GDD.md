@@ -121,3 +121,9 @@ Dự án sử dụng **Web Audio API** tự tổng hợp âm thanh bằng code, 
 - [x] Tích hợp bộ phát âm thanh Web Audio API Synthesizer & Nút Mute (🔊/🔇).
 - [x] Hoàn thiện hiệu ứng Cửa sập gãy, 50 Tiền vàng rơi, Chibi Ăn mừng và Win Banner.
 - [x] Tối ưu hóa bảo mật Repository (`.gitignore` ẩn file PDF & env).
+
+---
+
+## 6. Nguồn Asset & Bản Quyền (Credits)
+
+* **Sprite nhân vật Hiệp sĩ (Soldier_Idle):** [Tiny RPG Character Asset Pack](https://zerie.itch.io/tiny-rpg-character-asset-pack) sáng tác bởi **Zerie** trên itch.io.
