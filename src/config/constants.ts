@@ -26,7 +26,7 @@ export const PHYSICS_CONFIG = {
     GOLD: 0.5
   },
   CONSTRAINTS: {
-    SNAP_RADIUS: 25,
+    SNAP_RADIUS: 36,
     HOOK_STIFFNESS: 0.95,
     HOOK_DAMPING: 0.1,
     MOUSE_STIFFNESS: 0.5,

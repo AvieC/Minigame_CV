@@ -93,28 +93,34 @@ export function createBlock(config: BlockConfig, uiContainer: HTMLElement) {
   return { body, el };
 }
 
-export function spawnInitialBlocks(uiContainer: HTMLElement, containerWidth: number) {
+export function spawnInitialBlocks(uiContainer: HTMLElement, containerWidth: number, containerHeight: number) {
   const blockWidth = Math.round(containerWidth * 0.54);
-  const blockHeight = 110;
+  // Scale block height with viewport (clamp between 90px and 115px)
+  const blockHeight = Math.round(Math.min(Math.max(containerHeight * 0.135, 90), 115));
+
+  // Y positions scaled to container height so blocks start in the lower 60% of screen
+  const yBottom = Math.round(containerHeight * 0.80);
+  const yMid    = Math.round(containerHeight * 0.62);
+  const yTop    = Math.round(containerHeight * 0.44);
 
   // Spawn order determines visual stacking (later = higher z-index)
   createBlock({
     id: 'block-skills',
-    x: containerWidth * 0.6, y: 600, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_SKILLS,
+    x: containerWidth * 0.6, y: yBottom, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_SKILLS,
     title: 'Kỹ năng', content: 'JS/TS, HTML5 Canvas, Matter.js, OOP',
     hasBottomHook: true, type: 'cv'
   }, uiContainer);
 
   createBlock({
     id: 'block-edu',
-    x: containerWidth * 0.4, y: 450, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_EDU,
+    x: containerWidth * 0.4, y: yMid, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_EDU,
     title: 'Học vấn', content: 'CNTT UET (2021-2026) | CPA 3.03 | N3',
     hasBottomHook: true, type: 'cv'
   }, uiContainer);
 
   createBlock({
     id: 'block-personal',
-    x: containerWidth * 0.5, y: 300, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_PERSONAL,
+    x: containerWidth * 0.5, y: yTop, width: blockWidth, height: blockHeight, mass: PHYSICS_CONFIG.MASS.BLOCK_PERSONAL,
     title: 'Lã Việt Cường', content: 'Developer | 2003 | Hà Nội',
     hasBottomHook: true, type: 'cv'
   }, uiContainer);

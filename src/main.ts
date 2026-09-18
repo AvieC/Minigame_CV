@@ -9,6 +9,23 @@ import { playCoinShowerSFX, playButtonClickSFX, toggleMute } from './audio/audio
 const WIN_MASS = PHYSICS_CONFIG.MASS.WIN_THRESHOLD;
 let gameState: 'init' | 'playing' | 'win' = 'init';
 
+// ── Viewport Height Fix (Chrome Android URL bar bug) ─────────────────────────
+// `100vh` on mobile Chrome includes the browser UI (URL bar + nav bar), making
+// the game taller than the visible area. `100dvh` fixes this in Chrome 108+.
+// For older browsers we polyfill via a CSS custom property --app-h from window.innerHeight.
+function applyViewportHeight() {
+  const dvhSupported = CSS.supports('height', '1dvh');
+  if (!dvhSupported) {
+    const vh = window.innerHeight;
+    document.documentElement.style.setProperty('--app-h', `${vh}px`);
+    document.body.style.height = `${vh}px`;
+    const container = document.getElementById('game-container');
+    if (container) container.style.height = `${vh}px`;
+  }
+}
+
+applyViewportHeight();
+
 function init() {
   const container = document.getElementById('game-container');
   const uiLayer = document.getElementById('ui-layer');
@@ -16,17 +33,33 @@ function init() {
 
   initPhysics(container);
   initTrapdoor(container);
-  spawnInitialBlocks(uiLayer, container.clientWidth);
+  spawnInitialBlocks(uiLayer, container.clientWidth, container.clientHeight);
   initConstraints();
   startDOMSync();
 
   gameState = 'playing';
 
+  // Helper for cross-platform mobile touch & mouse button handling
+  const bindButton = (btn: HTMLElement, callback: (e: Event) => void) => {
+    let triggered = false;
+    const handler = (e: Event) => {
+      e.stopPropagation();
+      if (e.cancelable) e.preventDefault();
+      if (triggered) return;
+      triggered = true;
+      callback(e);
+      setTimeout(() => { triggered = false; }, 300);
+    };
+
+    btn.addEventListener('pointerdown', handler);
+    btn.addEventListener('touchstart', handler, { passive: false });
+    btn.addEventListener('click', handler);
+  };
+
   // Sound Mute Toggle
   const soundBtn = document.getElementById('btn-sound');
   if (soundBtn) {
-    soundBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+    bindButton(soundBtn, () => {
       const muted = toggleMute();
       soundBtn.textContent = muted ? '🔇' : '🔊';
       playButtonClickSFX();
@@ -57,9 +90,7 @@ function init() {
   let adsTimerRunning = false;
 
   if (adsBtn && adsPopup && adsSkipBtn) {
-    // Register skip handler for both click and pointerdown to ensure immediate response
-    const handleSkip = (e: Event) => {
-      e.stopPropagation();
+    const handleSkip = () => {
       if (adsSkipBtn.disabled) return;
       playButtonClickSFX();
       adsUsed = true;
@@ -80,11 +111,9 @@ function init() {
       }, uiLayer);
     };
 
-    adsSkipBtn.addEventListener('click', handleSkip);
-    adsSkipBtn.addEventListener('pointerdown', handleSkip);
+    bindButton(adsSkipBtn, handleSkip);
 
-    adsBtn.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
+    bindButton(adsBtn, () => {
       if (adsUsed || adsTimerRunning) return;
       playButtonClickSFX();
       adsTimerRunning = true;
@@ -128,14 +157,26 @@ function init() {
   // ── Restart Button ──────────────────────────────────────────────────────────
   const restartBtn = document.getElementById('btn-restart');
   if (restartBtn) {
-    restartBtn.addEventListener('click', () => {
+    bindButton(restartBtn, () => {
       playButtonClickSFX();
       window.location.reload();
     });
   }
 
-  // ── Resize ──────────────────────────────────────────────────────────────────
+  // ── Resize & Orientation Change ─────────────────────────────────────────────
   window.addEventListener('resize', () => handleResize(container));
+
+  // On mobile, when the device rotates, the physics world layout (trapdoor
+  // positions, block spawn coords) becomes stale. A full reload is the simplest
+  // safe reset. We debounce to avoid firing during normal browser resize.
+  let orientationReloadTimer: ReturnType<typeof setTimeout> | null = null;
+  const maybeReload = () => {
+    if (orientationReloadTimer) clearTimeout(orientationReloadTimer);
+    orientationReloadTimer = setTimeout(() => {
+      if (gameState !== 'win') window.location.reload();
+    }, 400);
+  };
+  window.addEventListener('orientationchange', maybeReload);
 }
 
 function checkWinCondition() {

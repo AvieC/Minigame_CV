@@ -39,6 +39,52 @@ export function initPhysics(container: HTMLElement) {
 
   Matter.World.add(world, mouseConstraint);
 
+  // ── Mobile Touch → Matter.js Mouse Bridge ──────────────────────────────────
+  // Matter.js internally translates pointer events to its own mouse model, but
+  // on iOS Safari the sequence (touchstart → touchmove → touchend) does NOT
+  // always synthesize a mouseup, leaving the MouseConstraint holding the body
+  // ("sticky finger" / ghost drag bug). We manually sync the mouse position
+  // and dispatch a synthetic mouseup on touchend to force-release the body.
+  const rect = () => container.getBoundingClientRect();
+
+  const onTouchStart = (e: TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const r = rect();
+    const scaleX = container.clientWidth / r.width;
+    const scaleY = container.clientHeight / r.height;
+    Matter.Mouse.setOffset(mouse, { x: -r.left * scaleX, y: -r.top * scaleY });
+    Matter.Mouse.setScale(mouse, { x: scaleX, y: scaleY });
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault(); // prevent scroll while dragging a block
+    const t = e.touches[0];
+    const r = rect();
+    const scaleX = container.clientWidth / r.width;
+    const scaleY = container.clientHeight / r.height;
+    (mouse.position as any).x = (t.clientX - r.left) * scaleX;
+    (mouse.position as any).y = (t.clientY - r.top) * scaleY;
+    (mouse as any).button = 0;
+  };
+
+  const onTouchEnd = (_e: TouchEvent) => {
+    // Synthesise a mouseup so Matter.js releases the constraint body
+    const syntheticUp = new MouseEvent('mouseup', {
+      bubbles: true,
+      cancelable: true,
+      clientX: mouse.position.x,
+      clientY: mouse.position.y
+    });
+    container.dispatchEvent(syntheticUp);
+    (mouse as any).button = -1;
+  };
+
+  container.addEventListener('touchstart', onTouchStart, { passive: true });
+  container.addEventListener('touchmove', onTouchMove, { passive: false });
+  container.addEventListener('touchend', onTouchEnd, { passive: true });
+  container.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
   // Override Matter.js body selection — use DOM hit-test result for pixel-perfect Z-index accuracy
   Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
     if (activeClickBody) {
